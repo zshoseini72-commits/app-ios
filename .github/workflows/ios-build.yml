@@ -45,8 +45,32 @@ jobs:
           PROFILE_PATH=$RUNNER_TEMP/profile.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-          echo -n "$CERT_P12_BASE64" | base64 --decode -o "$CERT_PATH"
-          echo -n "$PROFILE_BASE64" | base64 --decode -o "$PROFILE_PATH"
+          # Strip any stray whitespace/newlines that can sneak into a secret when it's
+          # copy-pasted by hand (a common cause of "SecKeychainItemImport: ... not valid").
+          printf '%s' "$CERT_P12_BASE64" | tr -d '[:space:]' | base64 --decode > "$CERT_PATH"
+          printf '%s' "$PROFILE_BASE64" | tr -d '[:space:]' | base64 --decode > "$PROFILE_PATH"
+
+          echo "p12 size: $(wc -c < "$CERT_PATH") bytes"
+          echo "profile size: $(wc -c < "$PROFILE_PATH") bytes"
+
+          # Fail fast with a clear message instead of a cryptic keychain error if the
+          # secret wasn't decoded into a real PKCS#12 file (wrong secret, bad copy/paste,
+          # or exported without the private key).
+          if ! openssl pkcs12 -info -in "$CERT_PATH" -passin "pass:$CERT_PASSWORD" -noout -legacy 2>/tmp/p12check.log; then
+            if ! openssl pkcs12 -info -in "$CERT_PATH" -passin "pass:$CERT_PASSWORD" -noout 2>>/tmp/p12check.log; then
+              echo "::error::فایل IOS_DIST_CERT_P12_BASE64 یک PKCS#12 معتبر نیست یا رمزش اشتباهه."
+              echo "علت‌های رایج: هنگام export از Keychain Access هم گواهی هم کلید خصوصی رو با هم انتخاب نکردید،"
+              echo "یا موقع کپی base64 یک کاراکتر اضافه (مثل % آخر ترمینال zsh) وارد شده."
+              cat /tmp/p12check.log
+              exit 1
+            fi
+          fi
+
+          if ! security cms -D -i "$PROFILE_PATH" > /dev/null 2>/tmp/profilecheck.log; then
+            echo "::error::فایل IOS_PROVISION_PROFILE_BASE64 یک پروفایل معتبر نیست."
+            cat /tmp/profilecheck.log
+            exit 1
+          fi
 
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
