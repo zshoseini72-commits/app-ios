@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>سعید آنالیز</title>
+<style>
+:root{
+  --bg:#0b1020;
+  --panel:#121a2e;
+  --panel2:#0f172a;
+  --line:#293653;
+  --text:#e8edf7;
+  --muted:#8996ab;
+  --teal:#5eead4;
+  --blue:#60a5fa;
+  --green:#4ade80;
+  --red:#fb7185;
+  --amber:#fbbf24;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Tahoma,Arial,sans-serif;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:720px;margin:auto;padding:16px 14px 60px;}
+.top{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 4px 10px;
+}
+.top h1{font-size:19px;margin:0;letter-spacing:.3px}
+.top .price{
+  font-family:Consolas,monospace;font-size:20px;font-weight:bold;
+  direction:ltr;
+}
+.badge{
+  font-size:11px;padding:3px 9px;border-radius:20px;
+  background:#183047;color:var(--teal);border:1px solid var(--line);
+}
+.disclaimer{
+  background:#1a1330;border:1px solid #3d2a5c;color:#d6b8ff;
+  border-radius:12px;padding:10px 14px;font-size:12.5px;margin-bottom:16px;
+}
+.section{margin-top:18px}
+.section h2{
+  font-size:13px;color:var(--muted);margin:0 0 8px;
+  text-transform:none;font-weight:normal;
+}
+.card{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:14px 16px;margin-bottom:10px;
+}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0}
+.row + .row{border-top:1px dashed #22304d}
+.tf-name{color:var(--muted);font-size:13px}
+.tf-val{font-family:Consolas,monospace;font-weight:bold;direction:ltr}
+.dir-bull{color:var(--green)}
+.dir-bear{color:var(--red)}
+.dir-neutral{color:var(--muted)}
+.status-pill{
+  display:inline-block;padding:5px 12px;border-radius:20px;font-size:13px;
+  font-weight:bold;
+}
+.st-waiting{background:#1e2a44;color:var(--blue)}
+.st-setup{background:#28321f;color:var(--amber)}
+.st-trigger{background:#1f3324;color:var(--green)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mini{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.mini .k{font-size:11px;color:var(--muted)}
+.mini .v{font-family:Consolas,monospace;font-size:15px;margin-top:2px;direction:ltr}
+.score-bar{
+  height:6px;border-radius:6px;background:#1c2740;overflow:hidden;margin-top:6px;
+}
+.score-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--teal))}
+.plan-table{width:100%;border-collapse:collapse;font-family:Consolas,monospace;font-size:13.5px}
+.plan-table td{padding:7px 4px;border-top:1px dashed #22304d;direction:ltr;text-align:left}
+.plan-table td:first-child{font-family:Tahoma,Arial,sans-serif;color:var(--muted);direction:rtl;text-align:right;width:38%}
+.footer-note{color:var(--muted);font-size:11.5px;margin-top:22px;text-align:center}
+.refresh-line{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--muted);margin-top:10px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-left:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.err{background:#331a1a;border:1px solid #5c2a2a;color:#ffb4b4;border-radius:12px;padding:12px 14px;font-size:13px}
+.skeleton{color:var(--muted);font-size:13px;text-align:center;padding:20px 0}
+
+.pos-card{border-radius:14px;padding:14px 16px;margin-bottom:10px;border:1px solid var(--line)}
+.pos-empty{background:var(--panel)}
+.pos-open{background:var(--panel)}
+.pos-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.pos-dir{font-weight:bold;font-size:14px}
+.pos-dir.LONG{color:var(--green)}
+.pos-dir.SHORT{color:var(--red)}
+.pnl{font-family:Consolas,monospace;font-size:20px;font-weight:bold;direction:ltr}
+.pnl.pos{color:var(--green)}
+.pnl.neg{color:var(--red)}
+.alert-box{border-radius:12px;padding:11px 14px;font-size:13px;margin-top:10px}
+.alert-info{background:#1e2a44;border:1px solid #2c3f66;color:var(--blue)}
+.alert-warn{background:#332a12;border:1px solid #5c4a1e;color:var(--amber)}
+.alert-critical{background:#331a1a;border:1px solid #5c2a2a;color:#ff9b9b}
+.btn{
+  background:#183047;color:var(--teal);border:1px solid var(--line);
+  border-radius:10px;padding:10px 14px;font-size:13px;font-family:inherit;
+  cursor:pointer;width:100%;margin-top:8px;
+}
+.btn.danger{color:var(--red);border-color:#5c2a2a}
+.manual-row{display:flex;gap:8px;margin-top:8px}
+.manual-row select, .manual-row input{
+  background:#0f172a;border:1px solid var(--line);color:var(--text);
+  border-radius:8px;padding:7px 8px;font-family:Consolas,monospace;direction:ltr;flex:1;font-size:13px;
+}
+.symbol-row{display:flex;gap:8px;margin-bottom:14px}
+.symbol-row input{
+  flex:1;background:#0f172a;border:1px solid var(--line);color:var(--text);
+  border-radius:10px;padding:9px 10px;font-family:Consolas,monospace;direction:ltr;
+  text-transform:uppercase;font-size:14px;
+}
+.symbol-row button{
+  background:#183047;color:var(--teal);border:1px solid var(--line);
+  border-radius:10px;padding:9px 16px;font-size:13px;font-family:inherit;cursor:pointer;white-space:nowrap;
+}
+.big-signal{
+  border-radius:16px;padding:22px 16px;text-align:center;margin-bottom:14px;
+  border:1px solid var(--line);background:var(--panel);
+}
+.big-signal-text{font-size:23px;font-weight:bold}
+.big-signal-sub{font-size:12.5px;color:var(--muted);margin-top:8px}
+.big-buy{background:#12331f;border-color:#1f5c36}
+.big-buy .big-signal-text{color:var(--green)}
+.big-sell{background:#331a1a;border-color:#5c2a2a}
+.big-sell .big-signal-text{color:var(--red)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="top">
+    <h1>سعید آنالیز</h1>
+    <div style="text-align:left">
+      <div class="price" id="priceNow">—</div>
+      <span class="badge" id="symBadge">BTCUSDT</span>
+    </div>
+  </div>
+
+  <div class="symbol-row">
+    <input id="symbolInput" type="text" value="BTCUSDT" placeholder="نماد ارز، مثلاً BTCUSDT یا ETH" onkeydown="if(event.key==='Enter') changeSymbol()">
+    <button onclick="changeSymbol()">تغییر ارز</button>
+  </div>
+
+  <div class="disclaimer">
+    این ابزار فقط <strong>آنالیز و نمایش</strong> است — هیچ سفارشی ثبت، تغییر یا لغو نمی‌کند
+    و به هیچ حساب معاملاتی متصل نیست. تصمیم نهایی و ریسک معامله همیشه با خودتان است.
+  </div>
+
+  <div id="loadingBox" class="skeleton">در حال دریافت داده از Binance…</div>
+  <div id="errorBox" style="display:none" class="err"></div>
+
+  <div id="app" style="display:none">
+
+    <div class="section">
+      <div id="bigSignal" class="big-signal">
+        <div class="big-signal-text" id="bigSignalText">در حال بررسی…</div>
+        <div class="big-signal-sub" id="bigSignalSub"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>وضعیت کلی سیگنال</h2>
+      <div class="card" style="text-align:center">
+        <span id="statusPill" class="status-pill st-waiting">WAITING</span>
+        <div id="statusReason" style="color:var(--muted);font-size:12.5px;margin-top:8px"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>جهت تایم‌فریم‌ها</h2>
+      <div class="card">
+        <div class="row"><span class="tf-name">4H — جهت اصلی</span><span class="tf-val" id="dir4h">—</span></div>
+        <div class="row"><span class="tf-name">1H — امتیاز روند</span><span class="tf-val" id="score1h">—</span></div>
+        <div class="row"><span class="tf-name">15M — Setup</span><span class="tf-val" id="setup15m">—</span></div>
+        <div class="row"><span class="tf-name">5M — Trigger</span><span class="tf-val" id="trig5m">—</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>جزئیات امتیاز 1H (از ۷)</h2>
+      <div class="card">
+        <div class="row"><span class="tf-name">Market Structure</span><span class="tf-val" id="s_struct">—</span></div>
+        <div class="row"><span class="tf-name">Trend Group (Ichimoku+EMA+MACD)</span><span class="tf-val" id="s_trend">—</span></div>
+        <div class="row"><span class="tf-name">RSI</span><span class="tf-val" id="s_rsi">—</span></div>
+        <div class="row"><span class="tf-name">Volume</span><span class="tf-val" id="s_vol">—</span></div>
+        <div class="score-bar"><div class="score-fill" id="scoreFill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>نقدشوندگی (Order Book)</h2>
+      <div class="grid2">
+        <div class="mini"><div class="k">Spread</div><div class="v" id="spreadVal">—</div></div>
+        <div class="mini"><div class="k">وضعیت عمق</div><div class="v" id="depthVal">—</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>پلن پیشنهادی (فقط نمایشی)</h2>
+      <div class="card">
+        <table class="plan-table">
+          <tr><td>نقطه ورود</td><td id="p_entry">—</td></tr>
+          <tr><td>حد ضرر (SL)</td><td id="p_sl">—</td></tr>
+          <tr><td>ریسک خالص (با کارمزد+اسلیپیج)</td><td id="p_risk">—</td></tr>
+          <tr><td>هدف اول (TP1)</td><td id="p_tp1">—</td></tr>
+          <tr><td>هدف دوم (TP2)</td><td id="p_tp2">—</td></tr>
+          <tr><td>هدف سوم (نزدیک‌ترین سطح)</td><td id="p_tp3">—</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>مدیریت پوزیشن — سیگنال خروج</h2>
+      <div id="posBox"></div>
+    </div>
+
+    <div class="section">
+      <h2>تنظیمات محاسبه هزینه</h2>
+      <div class="card">
+        <div class="row">
+          <span class="tf-name">کارمزد هر طرف (%)</span>
+          <input type="number" id="feeInput" value="0.04" step="0.01" style="width:70px;background:#0f172a;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:4px 8px;font-family:Consolas,monospace;direction:ltr">
+        </div>
+      </div>
+    </div>
+
+    <div class="refresh-line">
+      <span><span class="dot"></span> زنده — به‌روزرسانی خودکار هر ۳۰ ثانیه</span>
+      <span id="lastUpdate">—</span>
+    </div>
+
+  </div>
+
+  <div class="footer-note">
+    منبع داده: Binance Public API (فقط خواندنی) — این صفحه هیچ کلید API یا اطلاعات حساب ندارد.
+    <br>تحلیل الگوریتمی است و تضمین سود نیست.
+  </div>
+
+</div>
+
+<script>
+let SYMBOL = (function(){
+  try{ return localStorage.getItem('saeed_symbol') || "BTCUSDT"; }
+  catch(e){ return "BTCUSDT"; }
+})();
+const REFRESH_MS = 30000;
+let spreadHistory = [];
+
+const dirLabels = {LONG:"خرید", SHORT:"فروش"};
+const dir4hLabels = {BULLISH:"صعودی", BEARISH:"نزولی", NEUTRAL:"خنثی"};
+const pillLabels = {WAITING:"در انتظار", SETUP_FORMED:"Setup شکل گرفت", TRIGGER_CONFIRMED:"سیگنال تأیید شد"};
+const setupLabels = {WAITING:"در انتظار", SETUP_FORMED:"شکل گرفت", INVALID:"نامعتبر"};
+const trigLabels = {WAIT:"در انتظار", TRIGGER_CONFIRMED:"تأیید شد"};
+
+function normalizeSymbol(raw){
+  let s = (raw||"").toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!s) return "BTCUSDT";
+  if(!s.endsWith("USDT")) s += "USDT";
+  return s;
+}
+
+function changeSymbol(){
+  const raw = document.getElementById('symbolInput').value;
+  const sym = normalizeSymbol(raw);
+  SYMBOL = sym;
+  try{ localStorage.setItem('saeed_symbol', sym); }catch(e){}
+  document.getElementById('symbolInput').value = sym;
+  document.getElementById('symBadge').textContent = sym;
+  document.title = "سعید آنالیز — " + sym;
+  spreadHistory = [];
+  currentPlan = null;
+  document.getElementById('app').style.display = "none";
+  document.getElementById('errorBox').style.display = "none";
+  document.getElementById('loadingBox').style.display = "block";
+  document.getElementById('loadingBox').textContent = "در حال دریافت داده از Binance برای " + sym + "…";
+  renderPositionBox();
+  runAnalysis();
+}
+
+function ema(values, period){
+  const k = 2/(period+1);
+  let out = [values[0]];
+  for(let i=1;i<values.length;i++){
+    out.push(values[i]*k + out[i-1]*(1-k));
+  }
+  return out;
+}
+
+function rsi(closes, period=14){
+  let gains=[], losses=[];
+  for(let i=1;i<closes.length;i++){
+    const d = closes[i]-closes[i-1];
+    gains.push(Math.max(d,0));
+    losses.push(Math.max(-d,0));
+  }
+  let avgGain = gains.slice(0,period).reduce((a,b)=>a+b,0)/period;
+  let avgLoss = losses.slice(0,period).reduce((a,b)=>a+b,0)/period;
+  let out = [];
+  for(let i=period;i<gains.length;i++){
+    avgGain = (avgGain*(period-1)+gains[i])/period;
+    avgLoss = (avgLoss*(period-1)+losses[i])/period;
+    const rs = avgLoss===0 ? 100 : avgGain/avgLoss;
+    out.push(avgLoss===0 ? 100 : 100 - (100/(1+rs)));
+  }
+  return out;
+}
+
+function macd(closes){
+  const ema12 = ema(closes,12);
+  const ema26 = ema(closes,26);
+  const off = ema26.length - ema12.length; // ema12 longer array actually equal length since same input length
+  const macdLine = closes.map((_,i)=> ema12[i]-ema26[i]);
+  const signal = ema(macdLine.slice(26), 9);
+  const hist = signal.map((s,i)=> macdLine[i+26+ (macdLine.length-26-signal.length)] - s);
+  return {
+    macdLine: macdLine[macdLine.length-1],
+    signal: signal[signal.length-1],
+    hist: hist[hist.length-1]
+  };
+}
+
+function atr(highs, lows, closes, period=14){
+  let trs=[];
+  for(let i=1;i<highs.length;i++){
+    trs.push(Math.max(
+      highs[i]-lows[i],
+      Math.abs(highs[i]-closes[i-1]),
+      Math.abs(lows[i]-closes[i-1])
+    ));
+  }
+  const recent = trs.slice(-period);
+  return recent.reduce((a,b)=>a+b,0)/recent.length;
+}
+
+function ichimoku(highs, lows){
+  const n = highs.length;
+  function hh(period, endIdx){ return Math.max(...highs.slice(endIdx-period, endIdx)); }
+  function ll(period, endIdx){ return Math.min(...lows.slice(endIdx-period, endIdx)); }
+  const tenkan = (hh(9,n)+ll(9,n))/2;
+  const kijun = (hh(26,n)+ll(26,n))/2;
+  // cloud plotted 26 periods ago relative to "current" -> use data as of n-26
+  const idxPast = n-26;
+  const senkouA = idxPast>52 ? ((hh(9,idxPast)+ll(9,idxPast))/2 + (hh(26,idxPast)+ll(26,idxPast))/2)/2 : null;
+  const senkouB = idxPast>52 ? (hh(52,idxPast)+ll(52,idxPast))/2 : null;
+  return {tenkan, kijun, senkouA, senkouB};
+}
+
+function swingPoints(highs, lows, lookback=3){
+  let swingHighs=[], swingLows=[];
+  for(let i=lookback;i<highs.length-lookback;i++){
+    const windowH = highs.slice(i-lookback,i+lookback+1);
+    const windowL = lows.slice(i-lookback,i+lookback+1);
+    if(highs[i] === Math.max(...windowH)) swingHighs.push({i, val:highs[i]});
+    if(lows[i] === Math.min(...windowL)) swingLows.push({i, val:lows[i]});
+  }
+  return {swingHighs, swingLows};
+}
+
+async function fetchKlines(interval, limit){
+  const url = `https://api.binance.com/api/v3/klines?symbol=${SYMBOL}&interval=${interval}&limit=${limit}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("Binance klines error: "+res.status);
+  const raw = await res.json();
+  return {
+    open: raw.map(r=>+r[1]),
+    high: raw.map(r=>+r[2]),
+    low: raw.map(r=>+r[3]),
+    close: raw.map(r=>+r[4]),
+    volume: raw.map(r=>+r[5]),
+  };
+}
+
+async function fetchDepth(){
+  const url = `https://api.binance.com/api/v3/depth?symbol=${SYMBOL}&limit=20`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("Binance depth error: "+res.status);
+  return await res.json();
+}
+
+function fmt(n, d=1){
+  return n.toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
+}
+
+function analyze1H(data){
+  const {high, low, close, volume} = data;
+  const closesForInd = close;
+  const emaFast = ema(closesForInd, 20);
+  const emaSlow = ema(closesForInd, 50);
+  const rsiArr = rsi(closesForInd, 14);
+  const rsiNow = rsiArr[rsiArr.length-1];
+  const macdNow = macd(closesForInd);
+  const ich = ichimoku(high, low);
+  const priceNow = close[close.length-1];
+  const {swingHighs, swingLows} = swingPoints(high, low, 3);
+
+  // Market Structure (0-2)
+  let structLong = 0, structShort = 0;
+  if(swingHighs.length>=2 && swingLows.length>=2){
+    const hUp = swingHighs[swingHighs.length-1].val > swingHighs[swingHighs.length-2].val;
+    const lUp = swingLows[swingLows.length-1].val > swingLows[swingLows.length-2].val;
+    const hDn = swingHighs[swingHighs.length-1].val < swingHighs[swingHighs.length-2].val;
+    const lDn = swingLows[swingLows.length-1].val < swingLows[swingLows.length-2].val;
+    if(hUp && lUp) structLong = 2;
+    if(hDn && lDn) structShort = 2;
+  }
+
+  // Trend Group (cap 2): count confirmations among Ichimoku, EMA, MACD
+  let trendConfirmLong = 0, trendConfirmShort = 0;
+  const cloudTop = ich.senkouA && ich.senkouB ? Math.max(ich.senkouA, ich.senkouB) : null;
+  const cloudBot = ich.senkouA && ich.senkouB ? Math.min(ich.senkouA, ich.senkouB) : null;
+  if(cloudTop!==null){
+    if(priceNow > cloudTop) trendConfirmLong++;
+    if(priceNow < cloudBot) trendConfirmShort++;
+  }
+  if(emaFast[emaFast.length-1] > emaSlow[emaSlow.length-1]) trendConfirmLong++;
+  if(emaFast[emaFast.length-1] < emaSlow[emaSlow.length-1]) trendConfirmShort++;
+  if(macdNow.macdLine > macdNow.signal && macdNow.hist>0) trendConfirmLong++;
+  if(macdNow.macdLine < macdNow.signal && macdNow.hist<0) trendConfirmShort++;
+  const trendLong = Math.min(2, trendConfirmLong);
+  const trendShort = Math.min(2, trendConfirmShort);
+
+  // RSI (0-2)
+  let rsiLong=0, rsiShort=0;
+  if(rsiNow>=50 && rsiNow<=70) rsiLong=2;
+  else if(rsiNow>70) rsiLong=1;
+  if(rsiNow>=30 && rsiNow<=50) rsiShort=2;
+  else if(rsiNow<30) rsiShort=1;
+
+  // Volume (0-1)
+  const avgVol = volume.slice(-21,-1).reduce((a,b)=>a+b,0)/20;
+  const volNow = volume[volume.length-1];
+  const volConfirm = volNow > avgVol ? 1 : 0;
+
+  const longTotal = structLong + trendLong + rsiLong + volConfirm;
+  const shortTotal = structShort + trendShort + rsiShort + volConfirm;
+
+  return {
+    priceNow, emaFast, emaSlow, rsiNow, macdNow, ich,
+    struct:{long:structLong, short:structShort},
+    trend:{long:trendLong, short:trendShort},
+    rsiScore:{long:rsiLong, short:rsiShort},
+    volConfirm,
+    longTotal, shortTotal,
+    swingHighs, swingLows
+  };
+}
+
+function detect15mSetup(data, direction){
+  const {high, low, close} = data;
+  const {swingHighs, swingLows} = swingPoints(high, low, 2);
+  const lastClose = close[close.length-1];
+  const prevClose = close[close.length-2];
+  const lastOpen = data.open[data.open.length-1];
+
+  if(direction==="LONG"){
+    if(swingLows.length<1) return {state:"INVALID"};
+    const support = swingLows[swingLows.length-1].val;
+    const heldSupport = low[low.length-1] >= support*0.998;
+    const bullishReversal = lastClose > lastOpen && lastClose > prevClose;
+    if(heldSupport && bullishReversal){
+      return {state:"SETUP_FORMED", level:support};
+    }
+    return {state:"WAITING"};
+  } else if(direction==="SHORT"){
+    if(swingHighs.length<1) return {state:"INVALID"};
+    const resistance = swingHighs[swingHighs.length-1].val;
+    const heldResistance = high[high.length-1] <= resistance*1.002;
+    const bearishReversal = lastClose < lastOpen && lastClose < prevClose;
+    if(heldResistance && bearishReversal){
+      return {state:"SETUP_FORMED", level:resistance};
+    }
+    return {state:"WAITING"};
+  }
+  return {state:"WAITING"};
+}
+
+function detect5mTrigger(data, direction){
+  const {high, low, close, volume} = data;
+  const n = close.length;
+  const recentHigh = Math.max(...high.slice(n-11,n-1));
+  const recentLow = Math.min(...low.slice(n-11,n-1));
+  const avgVol = volume.slice(-21,-1).reduce((a,b)=>a+b,0)/20;
+  const lastClose = close[n-1];
+  const lastVol = volume[n-1];
+  const volOk = lastVol > avgVol*1.2;
+
+  if(direction==="LONG" && lastClose > recentHigh && volOk){
+    return {state:"TRIGGER_CONFIRMED"};
+  }
+  if(direction==="SHORT" && lastClose < recentLow && volOk){
+    return {state:"TRIGGER_CONFIRMED"};
+  }
+  return {state:"WAIT"};
+}
+
+function directionFrom4h(data){
+  const {high, low, close} = data;
+  const emaFast = ema(close, 20);
+  const emaSlow = ema(close, 50);
+  const ich = ichimoku(high, low);
+  const priceNow = close[close.length-1];
+  const cloudTop = ich.senkouA && ich.senkouB ? Math.max(ich.senkouA, ich.senkouB) : null;
+  const cloudBot = ich.senkouA && ich.senkouB ? Math.min(ich.senkouA, ich.senkouB) : null;
+  const emaUp = emaFast[emaFast.length-1] > emaSlow[emaSlow.length-1];
+  const emaDn = emaFast[emaFast.length-1] < emaSlow[emaSlow.length-1];
+  if(cloudTop!==null && priceNow>cloudTop && emaUp) return "BULLISH";
+  if(cloudBot!==null && priceNow<cloudBot && emaDn) return "BEARISH";
+  return "NEUTRAL";
+}
+
+async function runAnalysis(){
+  try{
+    const [d4h, d1h, d15m, d5m, depth] = await Promise.all([
+      fetchKlines("4h", 100),
+      fetchKlines("1h", 100),
+      fetchKlines("15m", 100),
+      fetchKlines("5m", 100),
+      fetchDepth()
+    ]);
+
+    const priceNow = d5m.close[d5m.close.length-1];
+    document.getElementById('priceNow').textContent = "$"+fmt(priceNow,1);
+
+    const dir4h = directionFrom4h(d4h);
+    document.getElementById('dir4h').textContent = dir4hLabels[dir4h] || dir4h;
+    document.getElementById('dir4h').className = "tf-val " + (dir4h==="BULLISH"?"dir-bull":dir4h==="BEARISH"?"dir-bear":"dir-neutral");
+
+    let direction = null;
+    if(dir4h==="BULLISH") direction="LONG";
+    else if(dir4h==="BEARISH") direction="SHORT";
+
+    const h1 = analyze1H(d1h);
+    document.getElementById('s_struct').textContent = direction==="SHORT" ? h1.struct.short+"/2" : h1.struct.long+"/2";
+    document.getElementById('s_trend').textContent = direction==="SHORT" ? h1.trend.short+"/2" : h1.trend.long+"/2";
+    document.getElementById('s_rsi').textContent = direction==="SHORT" ? h1.rsiScore.short+"/2" : h1.rsiScore.long+"/2";
+    document.getElementById('s_vol').textContent = h1.volConfirm+"/1";
+
+    const totalScore = direction==="SHORT" ? h1.shortTotal : (direction==="LONG" ? h1.longTotal : 0);
+    document.getElementById('score1h').textContent = direction ? totalScore+"/7" : "—";
+    document.getElementById('scoreFill').style.width = Math.round((totalScore/7)*100)+"%";
+
+    let setup = {state:"—"}, trigger = {state:"—"};
+    let statusPill = "WAITING", statusClass="st-waiting", reason="جهت 4H مشخص نیست یا امتیاز 1H کافی نیست";
+
+    if(direction && totalScore>=4){
+      setup = detect15mSetup(d15m, direction);
+      document.getElementById('setup15m').textContent = setupLabels[setup.state] || setup.state;
+      if(setup.state==="SETUP_FORMED"){
+        trigger = detect5mTrigger(d5m, direction);
+        document.getElementById('trig5m').textContent = trigLabels[trigger.state] || trigger.state;
+        if(trigger.state==="TRIGGER_CONFIRMED"){
+          statusPill="TRIGGER_CONFIRMED"; statusClass="st-trigger";
+          reason = "همه‌ی لایه‌ها هم‌جهت‌اند — سیگنال "+dirLabels[direction]+" تأیید شد (فقط نمایشی)";
+        } else {
+          statusPill="SETUP_FORMED"; statusClass="st-setup";
+          reason = "Setup در 15M تشکیل شده، منتظر Trigger در 5M";
+        }
+      } else {
+        document.getElementById('trig5m').textContent = "—";
+        reason = "روند 1H تأیید شده ولی Setup در 15M هنوز شکل نگرفته";
+      }
+    } else {
+      document.getElementById('setup15m').textContent = "—";
+      document.getElementById('trig5m').textContent = "—";
+    }
+
+    document.getElementById('statusPill').textContent = pillLabels[statusPill] || statusPill;
+    document.getElementById('statusPill').className = "status-pill "+statusClass;
+    document.getElementById('statusReason').textContent = reason;
+
+    // Big at-a-glance signal (no position needed)
+    const bigEl = document.getElementById('bigSignal');
+    const bigText = document.getElementById('bigSignalText');
+    const bigSub = document.getElementById('bigSignalSub');
+    if(statusPill==="TRIGGER_CONFIRMED" && direction==="LONG"){
+      bigEl.className = "big-signal big-buy";
+      bigText.textContent = "🟢 الان بخر (Long)";
+      bigSub.textContent = "همه‌ی تایم‌فریم‌ها هم‌جهت‌اند — این فقط یک سیگنال نمایشی است";
+    } else if(statusPill==="TRIGGER_CONFIRMED" && direction==="SHORT"){
+      bigEl.className = "big-signal big-sell";
+      bigText.textContent = "🔴 الان بفروش (Short)";
+      bigSub.textContent = "همه‌ی تایم‌فریم‌ها هم‌جهت‌اند — این فقط یک سیگنال نمایشی است";
+    } else {
+      bigEl.className = "big-signal";
+      bigText.textContent = "⚪ صبر کن";
+      bigSub.textContent = reason;
+    }
+
+    // Liquidity
+    const bestBid = +depth.bids[0][0];
+    const bestAsk = +depth.asks[0][0];
+    const mid = (bestBid+bestAsk)/2;
+    const spread = (bestAsk-bestBid);
+    const spreadPct = spread/mid*100;
+    spreadHistory.push(spreadPct);
+    if(spreadHistory.length>30) spreadHistory.shift();
+    const avgSpread = spreadHistory.reduce((a,b)=>a+b,0)/spreadHistory.length;
+    document.getElementById('spreadVal').textContent = spreadPct.toFixed(4)+"%";
+    const depthTop10Bid = depth.bids.slice(0,10).reduce((a,b)=>a+(+b[1]),0);
+    const depthTop10Ask = depth.asks.slice(0,10).reduce((a,b)=>a+(+b[1]),0);
+    const liquidityOk = spreadPct < avgSpread*3;
+    document.getElementById('depthVal').textContent = liquidityOk ? "نرمال" : "افت نقدشوندگی";
+    document.getElementById('depthVal').style.color = liquidityOk ? "var(--green)" : "var(--red)";
+
+    // Plan (display only)
+    if(direction && setup.level){
+      const atr15 = atr(d15m.high, d15m.low, d15m.close, 14);
+      const buffer = Math.max(0.10*atr15, Math.max(0.0005*priceNow, 2*spread));
+      const entry = priceNow;
+      let sl, tp1, tp2, tp3;
+      const feePct = (+document.getElementById('feeInput').value || 0.04)/100;
+      const feePerUnitRoundTrip = 2*feePct*entry;
+      const slippageEst = 1.5*spread;
+
+      if(direction==="LONG"){
+        sl = setup.level - buffer;
+        const riskGross = entry - sl;
+        const riskNet = riskGross + slippageEst + feePerUnitRoundTrip;
+        tp1 = entry + riskNet;
+        tp2 = entry + 2*riskNet;
+        const nextRes = h1.swingHighs.length ? h1.swingHighs[h1.swingHighs.length-1].val : entry + 3*riskNet;
+        tp3 = Math.max(nextRes, tp2);
+        document.getElementById('p_risk').textContent = fmt(riskNet,1)+" USDT";
+      } else {
+        sl = setup.level + buffer;
+        const riskGross = sl - entry;
+        const riskNet = riskGross + slippageEst + feePerUnitRoundTrip;
+        tp1 = entry - riskNet;
+        tp2 = entry - 2*riskNet;
+        const nextSup = h1.swingLows.length ? h1.swingLows[h1.swingLows.length-1].val : entry - 3*riskNet;
+        tp3 = Math.min(nextSup, tp2);
+        document.getElementById('p_risk').textContent = fmt(riskNet,1)+" USDT";
+      }
+      document.getElementById('p_entry').textContent = "$"+fmt(entry,1);
+      document.getElementById('p_sl').textContent = "$"+fmt(sl,1);
+      document.getElementById('p_tp1').textContent = "$"+fmt(tp1,1);
+      document.getElementById('p_tp2').textContent = "$"+fmt(tp2,1);
+      document.getElementById('p_tp3').textContent = "$"+fmt(tp3,1);
+
+      currentPlan = {direction, entry, sl, tp1, tp2, tp3};
+    } else {
+      ["p_entry","p_sl","p_risk","p_tp1","p_tp2","p_tp3"].forEach(id=>{
+        document.getElementById(id).textContent = "—";
+      });
+      currentPlan = null;
+    }
+
+    renderPositionBox();
+    checkExitSignals(priceNow, liquidityOk);
+
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('fa-IR');
+    document.getElementById('loadingBox').style.display = "none";
+    document.getElementById('errorBox').style.display = "none";
+    document.getElementById('app').style.display = "block";
+
+  } catch(err){
+    document.getElementById('loadingBox').style.display = "none";
+    document.getElementById('errorBox').style.display = "block";
+    if(String(err.message).includes("400")){
+      document.getElementById('errorBox').textContent = "نماد «"+SYMBOL+"» در بایننس معتبر نیست. نمونه‌های درست: BTCUSDT، ETHUSDT، SOLUSDT، XRPUSDT — نماد را اصلاح کن و دوباره امتحان کن.";
+    } else {
+      document.getElementById('errorBox').textContent = "خطا در دریافت داده: " + err.message + " — اگه این خطا هربار تکرار شد، احتمالاً مرورگر اجازه‌ی Fetch از فایل محلی رو نمی‌ده؛ این فایل رو روی یه هاست ساده (مثلاً GitHub Pages) بذار و از اونجا باز کن.";
+    }
+  }
+}
+
+// ---------- Position tracking (display-only exit signals) ----------
+let currentPlan = null; // {direction, entry, sl, tp1, tp2, tp3}
+
+function posKey(){ return 'saeed_position_' + SYMBOL; }
+function loadPosition(){
+  try{ return JSON.parse(localStorage.getItem(posKey())); }
+  catch(e){ return null; }
+}
+function savePosition(pos){ try{ localStorage.setItem(posKey(), JSON.stringify(pos)); }catch(e){} }
+function clearPosition(){ try{ localStorage.removeItem(posKey()); }catch(e){} renderPositionBox(); }
+
+function recordFromPlan(){
+  if(!currentPlan) return;
+  savePosition({
+    direction: currentPlan.direction,
+    entry: currentPlan.entry,
+    sl: currentPlan.sl,
+    tp1: currentPlan.tp1,
+    tp2: currentPlan.tp2,
+    tp3: currentPlan.tp3,
+    tp1Hit:false, tp2Hit:false,
+    openedAt: Date.now()
+  });
+  renderPositionBox();
+}
+
+function recordManual(){
+  const dir = document.getElementById('manDir').value;
+  const entry = +document.getElementById('manEntry').value;
+  const sl = +document.getElementById('manSl').value;
+  if(!entry || !sl || entry===sl){ alert('قیمت ورود و SL را درست وارد کن'); return; }
+  const risk = Math.abs(entry-sl);
+  const tp1 = dir==='LONG' ? entry+risk : entry-risk;
+  const tp2 = dir==='LONG' ? entry+2*risk : entry-2*risk;
+  const tp3 = dir==='LONG' ? entry+3*risk : entry-3*risk;
+  savePosition({direction:dir, entry, sl, tp1, tp2, tp3, tp1Hit:false, tp2Hit:false, openedAt:Date.now()});
+  renderPositionBox();
+}
+
+function renderPositionBox(){
+  const box = document.getElementById('posBox');
+  const pos = loadPosition();
+  if(!pos){
+    const planHint = currentPlan
+      ? `<button class="btn" onclick="recordFromPlan()">ثبت ورود بر اساس پلن فعلی (${dirLabels[currentPlan.direction]} @ $${fmt(currentPlan.entry,1)})</button>`
+      : `<div style="color:var(--muted);font-size:12.5px">فعلاً پلن فعالی برای ثبت خودکار نیست — یا دستی وارد کن</div>`;
+    box.innerHTML = `
+      <div class="pos-card pos-empty">
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">پوزیشن بازی ثبت نشده</div>
+        ${planHint}
+        <div style="font-size:11.5px;color:var(--muted);margin-top:12px">یا ثبت دستی (اگه خودت وارد شدی):</div>
+        <div class="manual-row">
+          <select id="manDir"><option value="LONG">خرید (Long)</option><option value="SHORT">فروش (Short)</option></select>
+          <input id="manEntry" type="number" placeholder="قیمت ورود" step="0.1">
+          <input id="manSl" type="number" placeholder="SL" step="0.1">
+        </div>
+        <button class="btn" onclick="recordManual()">ثبت دستی</button>
+      </div>`;
+    return;
+  }
+  box.innerHTML = `
+    <div class="pos-card pos-open">
+      <div class="pos-head">
+        <span class="pos-dir ${pos.direction}">${dirLabels[pos.direction]} @ $${fmt(pos.entry,1)}</span>
+        <span class="pnl" id="pnlVal">—</span>
+      </div>
+      <div style="font-size:12px;color:var(--muted)">SL: $${fmt(pos.sl,1)} · TP1: $${fmt(pos.tp1,1)} · TP2: $${fmt(pos.tp2,1)} · TP3: $${fmt(pos.tp3,1)}</div>
+      <div id="exitAlerts"></div>
+      <button class="btn danger" onclick="clearPosition()">بستن دستی پوزیشن (پاک کردن ردیابی)</button>
+    </div>`;
+}
+
+function checkExitSignals(currentPrice, liquidityOk){
+  let pos = loadPosition();
+  if(!pos) return;
+
+  const risk = Math.abs(pos.entry - pos.sl);
+  const pnlR = pos.direction==='LONG'
+    ? (currentPrice - pos.entry)/risk
+    : (pos.entry - currentPrice)/risk;
+
+  const pnlEl = document.getElementById('pnlVal');
+  if(pnlEl){
+    pnlEl.textContent = (pnlR>=0?"+":"") + pnlR.toFixed(2) + "R";
+    pnlEl.className = "pnl " + (pnlR>=0?"pos":"neg");
+  }
+
+  const alerts = [];
+  const slHit = pos.direction==='LONG' ? currentPrice<=pos.sl : currentPrice>=pos.sl;
+  const tp1Hit = pos.direction==='LONG' ? currentPrice>=pos.tp1 : currentPrice<=pos.tp1;
+  const tp2Hit = pos.direction==='LONG' ? currentPrice>=pos.tp2 : currentPrice<=pos.tp2;
+  const tp3Hit = pos.direction==='LONG' ? currentPrice>=pos.tp3 : currentPrice<=pos.tp3;
+
+  if(slHit){
+    alerts.push({type:'critical', text:'🔴 SL خورد — سیگنال: خروج کامل (ضرر). پوزیشن رو پاک کن.'});
+  } else if(tp3Hit){
+    alerts.push({type:'info', text:'🟢 TP3 رسید — سیگنال: خروج کامل ۴۰٪ باقی‌مانده.'});
+  } else {
+    if(tp2Hit && !pos.tp2Hit){ pos.tp2Hit=true; savePosition(pos); }
+    if(tp1Hit && !pos.tp1Hit){ pos.tp1Hit=true; savePosition(pos); }
+    if(pos.tp2Hit){
+      alerts.push({type:'info', text:'🟡 TP2 خورده — سیگنال: بستن ۳۰٪ دیگر، ۴۰٪ باقی رو با Trailing Stop در 15M مدیریت کن.'});
+    } else if(pos.tp1Hit){
+      alerts.push({type:'info', text:'🟡 TP1 خورده — سیگنال: بستن ۳۰٪ و انتقال SL به Break-even.'});
+    }
+    if(!liquidityOk){
+      alerts.push({type:'warn', text:'⚠️ افت نقدشوندگی بازار — در خروج احتیاط کن، اسپرد ممکنه اجرای واقعی رو بدتر کنه.'});
+    }
+  }
+
+  const box = document.getElementById('exitAlerts');
+  if(box){
+    box.innerHTML = alerts.map(a=>`<div class="alert-box alert-${a.type}">${a.text}</div>`).join('');
+  }
+}
+
+document.getElementById('symbolInput').value = SYMBOL;
+document.getElementById('symBadge').textContent = SYMBOL;
+document.title = "سعید آنالیز — " + SYMBOL;
+renderPositionBox();
+runAnalysis();
+setInterval(runAnalysis, REFRESH_MS);
+</script>
+
+</body>
+</html>
