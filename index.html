@@ -4,6 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>سعید آنالیز</title>
+
+<!-- PWA: قابل نصب روی صفحه‌ی اصلی آیفون (Add to Home Screen) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b1020">
+<meta name="background-color" content="#0b1020">
+
+<!-- iOS Safari این‌ها رو به‌جای manifest.json می‌خونه؛ باعث میشه بدون نوار آدرس مرورگر باز بشه -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="سعید آنالیز">
+
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="apple-touch-icon" sizes="120x120" href="icons/icon-120.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
 <style>
 :root{
   --bg:#0b1020;
@@ -798,6 +818,17 @@ document.title = "سعید آنالیز — " + SYMBOL;
 renderPositionBox();
 runAnalysis();
 setInterval(runAnalysis, REFRESH_MS);
+</script>
+
+<script>
+// ثبت Service Worker فقط برای این‌که اپ به‌عنوان PWA قابل‌نصب شناخته بشه و
+// خود صفحه (پوسته) حتی در یک لحظه‌ی قطعی شبکه هم باز بشه. داده‌های زنده‌ی
+// بایننس همیشه مستقیم و آنلاین گرفته می‌شن و کش نمی‌شن.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
 </script>
 
 </body>
